@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Employee; // Adicione esta linha
+use App\Models\Employee;
 use App\Models\Department;
+use Illuminate\Support\Facades\Validator;
+
 
 
 
@@ -24,6 +26,18 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email',
+            'cpf' => 'required|cpf', 
+            'age' => 'required|integer|min:18',
+            'department_id' => 'required|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:employees',
@@ -31,6 +45,7 @@ class EmployeeController extends Controller
             'age' => 'required|integer',
             'department_id' => 'required|exists:departments,id',
         ]);
+    
 
         Employee::create($data);
 
